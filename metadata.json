@@ -1,0 +1,8 @@
+{
+  "name": "Miles Apart, Hearts Together",
+  "description": "A romantic long-distance relationship experience with interactive memory galleries, live counters, love letters, map connectivity, music player, and night sky animations.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
