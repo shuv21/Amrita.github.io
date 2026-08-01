@@ -687,275 +687,140 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 13. PAGE 7: OUR SONG MUSIC PLAYER (HINDI ROMANTIC SONGS & SYNTHESIZER)
   // --------------------------------------------------------------------------
-  let audioCtx = null;
-  let synthInterval = null;
-  let htmlAudio = null;
+ // ================= MUSIC PLAYER =================
 
-  const hindiPlaylist = [
-    {
-      title: 'Tere Hawaale',
-      artist: 'Arijit Singh & Shilpa Rao • Forever In Love',
-      duration: '5:46',
-      cover: '✨',
-      audioUrl: 'music/oursong.mp3'
-    }
-  ];
+let htmlAudio = new Audio();
+htmlAudio.loop = true;
+htmlAudio.volume = 0.8;
 
-  let currentTrackIdx = 0;
-
-  const vinylDisc = document.getElementById('vinyl-disc');
-  const btnPlayPause = document.getElementById('btn-play-pause');
-  const playPauseIcon = document.getElementById('play-pause-icon');
-  const visualizerCanvas = document.getElementById('visualizer-canvas');
-  const vizCtx = visualizerCanvas ? visualizerCanvas.getContext('2d') : null;
-
-  function initAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (!htmlAudio) {
-      htmlAudio = new Audio();
-      htmlAudio.loop = true;
-      htmlAudio.volume = state.volume || 0.8;
-
-      htmlAudio.addEventListener('timeupdate', () => {
-        if (htmlAudio.duration) {
-          const cur = htmlAudio.currentTime;
-          const dur = htmlAudio.duration;
-          const pct = (cur / dur) * 100;
-
-          const fill = document.getElementById('progress-bar-fill');
-          if (fill) fill.style.width = `${pct}%`;
-
-          const thumb = document.getElementById('progress-bar-thumb');
-          if (thumb) thumb.style.left = `${pct}%`;
-
-          const curTimeElem = document.getElementById('time-current');
-          if (curTimeElem) {
-            const mins = Math.floor(cur / 60);
-            const secs = Math.floor(cur % 60).toString().padStart(2, '0');
-            curTimeElem.textContent = `${mins}:${secs}`;
-          }
-
-          const durTimeElem = document.getElementById('time-total');
-          if (durTimeElem && !isNaN(dur)) {
-            const mins = Math.floor(dur / 60);
-            const secs = Math.floor(dur % 60).toString().padStart(2, '0');
-            durTimeElem.textContent = `${mins}:${secs}`;
-          }
-        }
-      });
-    }
+const playlist = [
+  {
+    title: "Tere Hawaale",
+    artist: "Arijit Singh & Shilpa Rao",
+    duration: "5:46",
+    cover: "❤️",
+    audioUrl: "music/oursong.mp3"
   }
+];
 
-  // Romantic Melodic Indian Classical / Raag Yaman Synth generator fallback
-  function playSynthChord() {
-    if (!audioCtx || !state.isPlaying) return;
+let currentTrack = 0;
+let isPlaying = false;
 
-    // Frequencies for Raag Yaman / Romantic Indian Melody notes (Sa Re Ga Ma Pa Dha Ni Sa)
-    const romanticMelodies = [
-      [261.63, 329.63, 392.00, 493.88], // C, E, G, B
-      [293.66, 369.99, 440.00, 523.25], // D, F#, A, C
-      [329.63, 392.00, 493.88, 587.33], // E, G, B, D
-      [220.00, 277.18, 329.63, 440.00]  // A, C#, E, A
-    ];
+const playBtn = document.getElementById("btn-play-pause");
+const playIcon = document.getElementById("play-pause-icon");
 
-    const currentChord = romanticMelodies[Math.floor(Math.random() * romanticMelodies.length)];
+function loadSong() {
+    const song = playlist[currentTrack];
 
-    currentChord.forEach(freq => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+    htmlAudio.src = song.audioUrl;
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    document.getElementById("song-title").textContent = song.title;
+    document.getElementById("song-artist").textContent = song.artist;
+    document.getElementById("album-cover-img").innerHTML =
+        `<span style="font-size:60px">${song.cover}</span>`;
+}
 
-      gain.gain.setValueAtTime(0.04 * state.volume, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.8);
+loadSong();
 
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+function togglePlay() {
 
-      osc.start();
-      osc.stop(audioCtx.currentTime + 3.8);
-    });
-  }
+    if (!isPlaying) {
 
-  function loadTrack(idx) {
-    currentTrackIdx = (idx + hindiPlaylist.length) % hindiPlaylist.length;
-    const track = hindiPlaylist[currentTrackIdx];
+        htmlAudio.play();
 
-    const titleElem = document.getElementById('song-title');
-    const artistElem = document.getElementById('song-artist');
-    const albumCoverElem = document.getElementById('album-cover-img');
-    const totalTimeElem = document.getElementById('time-total');
+        playIcon.textContent = "⏸";
 
-    if (titleElem) titleElem.textContent = track.title;
-    if (artistElem) {
-      if (currentTrackIdx === 0) {
-        artistElem.textContent = `Arijit Singh • ${state.partner1} & ${state.partner2}'s Special Theme`;
-      } else {
-        artistElem.textContent = track.artist;
-      }
-    }
-    if (albumCoverElem) albumCoverElem.innerHTML = `<span>${track.cover}</span>`;
-    if (totalTimeElem) totalTimeElem.textContent = track.duration;
+        document
+        .getElementById("vinyl-disc")
+        .classList.add("playing");
 
-    // Update track selector pills active state
-    const trackPills = document.querySelectorAll('.track-pill');
-    trackPills.forEach((pill, i) => {
-      if (i === currentTrackIdx) pill.classList.add('active');
-      else pill.classList.remove('active');
-    });
+        isPlaying = true;
 
-    if (htmlAudio) {
-      htmlAudio.src = track.audioUrl;
-      if (state.isPlaying) {
-        htmlAudio.play().catch(() => {});
-      }
-    }
-  }
-
-  function togglePlay() {
-    initAudio();
-    if (audioCtx && audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-
-    state.isPlaying = !state.isPlaying;
-
-    if (!htmlAudio.src || htmlAudio.src === '') {
-      loadTrack(currentTrackIdx);
-    }
-
-    if (state.isPlaying) {
-      playPauseIcon.textContent = '⏸';
-      vinylDisc.classList.add('playing');
-      synthInterval = setInterval(playSynthChord, 3000);
-      playSynthChord();
-      
-      htmlAudio.play().catch(e => {
-        console.log('Audio autoplay policy caught:', e);
-      });
-
-      const currentSongName = hindiPlaylist[currentTrackIdx].title;
-      showToast(`🎶 Playing "${currentSongName}" (Hindi Romantic Song)`);
     } else {
-      playPauseIcon.textContent = '▶';
-      vinylDisc.classList.remove('playing');
-      if (synthInterval) clearInterval(synthInterval);
-      if (htmlAudio) htmlAudio.pause();
+
+        htmlAudio.pause();
+
+        playIcon.textContent = "▶";
+
+        document
+        .getElementById("vinyl-disc")
+        .classList.remove("playing");
+
+        isPlaying = false;
     }
-  }
+}
 
-  btnPlayPause.addEventListener('click', togglePlay);
-  document.getElementById('btn-audio-toggle').addEventListener('click', togglePlay);
+playBtn.addEventListener("click", togglePlay);
 
-  // Previous & Next Track Buttons
-  const btnPrevTrack = document.getElementById('btn-prev-track');
-  if (btnPrevTrack) {
-    btnPrevTrack.addEventListener('click', () => {
-      initAudio();
-      loadTrack(currentTrackIdx - 1);
-      if (state.isPlaying && htmlAudio) {
-        htmlAudio.play().catch(() => {});
-      }
-      showToast(`⏮️ ${hindiPlaylist[currentTrackIdx].title}`);
-    });
-  }
+document
+.getElementById("btn-audio-toggle")
+.addEventListener("click", togglePlay);
 
-  const btnNextTrack = document.getElementById('btn-next-track');
-  if (btnNextTrack) {
-    btnNextTrack.addEventListener('click', () => {
-      initAudio();
-      loadTrack(currentTrackIdx + 1);
-      if (state.isPlaying && htmlAudio) {
-        htmlAudio.play().catch(() => {});
-      }
-      showToast(`⏭️ ${hindiPlaylist[currentTrackIdx].title}`);
-    });
-  }
+htmlAudio.addEventListener("timeupdate",()=>{
 
-  // Playlist Pills click handler
-  document.addEventListener('click', (e) => {
-    const pill = e.target.closest('.track-pill');
-    if (pill) {
-      const trackIdx = parseInt(pill.dataset.track, 10);
-      if (!isNaN(trackIdx)) {
-        initAudio();
-        loadTrack(trackIdx);
-        if (!state.isPlaying) {
-          togglePlay();
-        } else if (htmlAudio) {
-          htmlAudio.play().catch(() => {});
-          showToast(`🎵 Now Playing: ${hindiPlaylist[currentTrackIdx].title}`);
-        }
-      }
-    }
-  });
+    if(!htmlAudio.duration) return;
 
-  // Volume Slider & Mute
-  const volumeSlider = document.getElementById('volume-slider');
-  if (volumeSlider) {
-    volumeSlider.addEventListener('input', (e) => {
-      state.volume = parseFloat(e.target.value);
-      if (htmlAudio) htmlAudio.volume = state.volume;
-    });
-  }
+    const percent =
+        (htmlAudio.currentTime/htmlAudio.duration)*100;
 
-  const btnMute = document.getElementById('btn-mute');
-  if (btnMute) {
-    btnMute.addEventListener('click', () => {
-      if (htmlAudio) {
-        htmlAudio.muted = !htmlAudio.muted;
-        document.getElementById('volume-icon').textContent = htmlAudio.muted ? '🔇' : '🔊';
-        showToast(htmlAudio.muted ? '🔇 Muted' : '🔊 Unmuted');
-      }
-    });
-  }
+    document.getElementById("progress-bar-fill").style.width =
+        percent+"%";
 
-  // Progress Bar Seek
-  const trackContainer = document.getElementById('progress-bar-track');
-  if (trackContainer) {
-    trackContainer.addEventListener('click', (e) => {
-      if (htmlAudio && htmlAudio.duration) {
-        const rect = trackContainer.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const pct = clickX / rect.width;
-        htmlAudio.currentTime = pct * htmlAudio.duration;
-      }
-    });
-  }
+    document.getElementById("progress-bar-thumb").style.left =
+        percent+"%";
 
-  // Playlist Button toast
-  const btnPlaylist = document.getElementById('btn-playlist');
-  if (btnPlaylist) {
-    btnPlaylist.addEventListener('click', () => {
-      showToast('📜 Romantic Playlist: 1. Kesariya, 2. Tum Hi Ho, 3. Raataan Lambiyan, 4. Pehli Nazar Mein, 5. Tere Hawaale');
-    });
-  }
+    document.getElementById("time-current").textContent =
+        formatTime(htmlAudio.currentTime);
 
-  // Visualizer Animation Loop
-  function drawVisualizer() {
-    if (vizCtx && visualizerCanvas) {
-      vizCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+    document.getElementById("time-total").textContent =
+        formatTime(htmlAudio.duration);
 
-      const bars = 32;
-      const barWidth = visualizerCanvas.width / bars;
+});
 
-      for (let i = 0; i < bars; i++) {
-        const barHeight = state.isPlaying
-          ? Math.abs(Math.sin(Date.now() * 0.005 + i * 0.2)) * (visualizerCanvas.height * 0.8) + 5
-          : 4;
+function formatTime(sec){
 
-        vizCtx.fillStyle = '#FF4D88';
-        vizCtx.fillRect(i * barWidth, visualizerCanvas.height - barHeight, barWidth - 2, barHeight);
-      }
-    }
+    let m=Math.floor(sec/60);
 
-    requestAnimationFrame(drawVisualizer);
-  }
+    let s=Math.floor(sec%60);
 
-  drawVisualizer();
+    if(s<10)s="0"+s;
+
+    return `${m}:${s}`;
+
+}
+
+document
+.getElementById("progress-bar-track")
+.addEventListener("click",(e)=>{
+
+    const rect=e.target.getBoundingClientRect();
+
+    const x=e.clientX-rect.left;
+
+    const p=x/rect.width;
+
+    htmlAudio.currentTime=p*htmlAudio.duration;
+
+});
+
+document
+.getElementById("volume-slider")
+.addEventListener("input",(e)=>{
+
+    htmlAudio.volume=e.target.value;
+
+});
+
+document
+.getElementById("btn-mute")
+.addEventListener("click",()=>{
+
+    htmlAudio.muted=!htmlAudio.muted;
+
+    document.getElementById("volume-icon").textContent =
+        htmlAudio.muted?"🔇":"🔊";
+
+});
 
   // --------------------------------------------------------------------------
   // 15. PAGE 8: VOICE NOTES (DIL KI AAWAZ) & LIVE MIC RECORDER
