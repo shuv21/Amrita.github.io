@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
       artist: 'Arijit Singh & Shilpa Rao • Forever In Love',
       duration: '5:46',
       cover: '✨',
-      audioUrl:
+      audioUrl: 'music/oursong.mp3'
     }
   ];
 
