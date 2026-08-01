@@ -807,39 +807,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const hindiPlaylist = [
     {
-      title: 'Kesariya',
-      artist: `Arijit Singh • ${state.partner1} & ${state.partner2}'s Special Theme`,
-      duration: '4:28',
-      cover: '🧡',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
-    },
-    {
-      title: 'Tum Hi Ho',
-      artist: 'Arijit Singh • Heartfelt Romance',
-      duration: '4:22',
-      cover: '💖',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=sweet-love-10925.mp3'
-    },
-    {
-      title: 'Raataan Lambiyan',
-      artist: 'Jubin Nautiyal & Asees Kaur • Sweet Night Whispers',
-      duration: '3:50',
-      cover: '🌙',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_823a07747e.mp3?filename=romantic-acoustic-guitar-13840.mp3'
-    },
-    {
-      title: 'Pehli Nazar Mein',
-      artist: 'Atif Aslam • Love At First Sight',
-      duration: '5:12',
-      cover: '🌹',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tender-love-10651.mp3'
-    },
-    {
       title: 'Tere Hawaale',
       artist: 'Arijit Singh & Shilpa Rao • Forever In Love',
       duration: '5:46',
       cover: '✨',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939fd7a0e.mp3?filename=acoustic-breeze-12461.mp3'
+      audioUrl:
     }
   ];
 
